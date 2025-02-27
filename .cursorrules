@@ -1,0 +1,89 @@
+## Overthinkistan Frontend - Cursor Rules
+
+### 📌 Proje Amacı
+Overthinkistan, insanların hayatın ağırlıklarından ve sorunlarından uzaklaşmasını sağlayacak mizahi ve rehber içerikler sunan bir platformdur. Kullanıcılar anonim hikayelerini paylaşabilir, mizahi quizler çözebilir ve etkileşimli bir topluluğa dahil olabilirler.
+
+---
+
+### 🚀 Kullanılan Teknolojiler
+- **Next.js** → React tabanlı framework, SSR ve SEO uyumluluğu için kullanılıyor.
+- **Tailwind CSS** → Hızlı ve modüler tasarım için kullanılıyor.
+- **PostgreSQL** → Veritabanı olarak kullanılacak.
+- **.NET 9 (Backend)** → API servisleri için tercih ediliyor.
+- **NextAuth.js** → Kullanıcı kimlik doğrulama ve OAuth entegrasyonu için.
+- **SignalR** → Gerçek zamanlı etkileşim (bildirim, sohbet) için.
+- **Markdown** → Makale ve rehber içerik yönetimi için.
+
+---
+
+### 🎯 Frontend Yapısı & Kurallar
+- **Bileşenler modüler olacak ve tekrar kullanılabilir şekilde tasarlanacak.**
+- **Tailwind ile mobil uyumluluk ve tema desteği sağlanacak.**
+- **API çağrıları için React Query veya SWR kullanılacak.**
+- **State yönetimi için React Context API veya Zustand tercih edilecek.**
+- **Sayfa yönlendirmeleri Next.js'in dinamik route sistemine uygun olacak.**
+- **Hızlı yükleme süreleri için optimizasyon ve lazy loading uygulanacak.**
+
+---
+
+### 📌 Öncelikli Geliştirilecek Frontend Özellikleri
+1. **Ana Sayfa** → Günlük öneriler, popüler içerikler
+2. **Anonim Hikaye Paylaşımı** → Kullanıcıların kendi deneyimlerini anonim olarak paylaşabileceği form
+3. **Mizahi Quizler** → Eğlenceli testler ve sonuç paylaşımı
+4. **Forum & Tartışma Alanı** → Kullanıcıların konu açıp yorum yapabileceği interaktif alan
+5. **Makale & Rehber İçerikleri** → Markdown ile yönetilen dinamik içerik yapısı
+6. **Gerçek Zamanlı Bildirimler** → Kullanıcı etkileşimlerini anlık gösterecek sistem
+
+---
+
+### 📂 Proje Dizin Yapısı
+- **/src/components** → Yeniden kullanılabilir UI bileşenleri
+  - **/common** → Buton, Kart, Form elemanları gibi temel bileşenler
+  - **/layout** → Header, Footer, Sidebar gibi sayfa düzeni bileşenleri
+  - **/features** → Özellik bazlı karmaşık bileşenler (Hikaye Kartı, Quiz Modülü vb.)
+- **/src/app** → Next.js App Router sayfaları
+- **/src/hooks** → Özel React hook'ları
+- **/src/lib** → Yardımcı fonksiyonlar ve servisler
+- **/src/context** → React Context API tanımlamaları
+- **/src/types** → TypeScript tip tanımlamaları
+- **/public** → Statik dosyalar (görseller, fontlar)
+
+---
+
+### 🎨 Stil Kuralları
+- **Tailwind sınıfları öncelikli olarak kullanılacak**
+- **Karmaşık bileşenler için CSS Modules tercih edilebilir**
+- **Renk paleti ve tema değişkenleri tailwind.config.js içinde tanımlanacak**
+- **Responsive tasarım için Tailwind'in breakpoint sistemi kullanılacak**
+- **Dark mode desteği sağlanacak**
+
+---
+
+### 🔄 State Yönetimi
+- **Yerel state için React useState ve useReducer kullanılacak**
+- **Global state için Zustand tercih edilecek**
+- **Form yönetimi için React Hook Form kullanılacak**
+- **API state yönetimi için React Query kullanılacak**
+
+---
+
+### 🧪 Test Stratejisi
+- **Bileşen testleri için Jest ve React Testing Library kullanılacak**
+- **E2E testleri için Cypress tercih edilecek**
+- **Kritik kullanıcı yolları için test senaryoları yazılacak**
+
+---
+
+### 🚀 Performans Kuralları
+- **Görsel optimizasyonu için Next.js Image bileşeni kullanılacak**
+- **Bundle boyutunu küçültmek için kod bölme (code splitting) uygulanacak**
+- **Lighthouse skorları düzenli olarak kontrol edilecek**
+- **Gereksiz render'ları önlemek için memoization teknikleri kullanılacak**
+
+---
+
+### 📱 Erişilebilirlik Kuralları
+- **Tüm interaktif elemanlar klavye ile kullanılabilir olacak**
+- **Semantik HTML elemanları tercih edilecek**
+- **ARIA attribute'ları gerektiğinde kullanılacak**
+- **Renk kontrastı WCAG standartlarına uygun olacak** 
