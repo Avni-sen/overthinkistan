@@ -1,22 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import AuthLayout from "@/components/layout/AuthLayout";
 import Input from "@/components/common/Input";
 import Button from "@/components/Button";
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get("redirectUrl") || "/";
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    rememberMe: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
     // Clear error when user types
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
@@ -48,18 +56,41 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Burada gerçek API çağrısı yapılacak
-      console.log("Giriş yapılıyor:", formData);
+      const response = await fetch("http://localhost:3001/auth/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
-      // Simüle edilmiş API gecikmesi
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const data = await response.json();
 
-      // Başarılı giriş sonrası yönlendirme
-      window.location.href = "/";
+      if (!response.ok) {
+        throw new Error(data.message || "Giriş işlemi başarısız oldu");
+      }
+
+      if (formData.rememberMe) {
+        const expirationDate = new Date();
+        expirationDate.setDate(expirationDate.getDate() + 30);
+        document.cookie = `token=Bearer ${
+          data.token
+        }; path=/; expires=${expirationDate.toUTCString()}`;
+      } else {
+        document.cookie = `token=Bearer ${data.token}; path=/;`;
+      }
+
+      window.location.href = redirectUrl;
     } catch (error) {
       console.error("Giriş hatası:", error);
       setErrors({
-        form: "Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.",
+        form:
+          error instanceof Error
+            ? error.message
+            : "Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.",
       });
     } finally {
       setIsLoading(false);
@@ -107,13 +138,15 @@ export default function LoginPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <input
-              id="remember-me"
-              name="remember-me"
+              id="rememberMe"
+              name="rememberMe"
               type="checkbox"
+              checked={formData.rememberMe}
+              onChange={handleChange}
               className="h-4 w-4 text-primary-light dark:text-primary-dark focus:ring-primary-light dark:focus:ring-primary-dark border-gray-300 dark:border-gray-600 rounded transition-colors duration-200"
             />
             <label
-              htmlFor="remember-me"
+              htmlFor="rememberMe"
               className="ml-2 block text-sm text-text-light dark:text-text-dark transition-colors duration-200"
             >
               Beni hatırla

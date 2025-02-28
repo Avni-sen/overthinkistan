@@ -1,9 +1,46 @@
+"use client";
+
 import Link from "next/link";
 import Button from "@/components/Button";
 import Logo from "@/components/common/Logo";
 import ThemeToggle from "@/components/common/ThemeToggle";
+import { useEffect, useState } from "react";
+
+const getCookie = (name: string): string | null => {
+  if (typeof document === "undefined") return null;
+
+  const cookies = document.cookie.split(";");
+  for (let i = 0; i < cookies.length; i++) {
+    const cookie = cookies[i].trim();
+    if (cookie.startsWith(name + "=")) {
+      return cookie.substring(name.length + 1);
+    }
+  }
+  return null;
+};
+
+const deleteCookie = (name: string): void => {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  document.cookie = `${name}=; max-age=0; path=/;`;
+};
 
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Token cookie kontrolü
+    const token = getCookie("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleLogout = () => {
+    // Token cookie'sini sil
+    deleteCookie("token");
+    setIsLoggedIn(false);
+    // Çıkış yapıldığında login sayfasına yönlendir
+    window.location.href = "/auth/login";
+  };
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark transition-colors duration-200">
       {/* Header */}
@@ -12,16 +49,24 @@ export default function Home() {
           <Logo size="md" />
           <div className="flex items-center space-x-4">
             <ThemeToggle />
-            <Link href="/auth/login">
-              <Button variant="primary" size="sm">
-                Giriş Yap
+            {isLoggedIn ? (
+              <Button variant="danger" size="sm" onClick={handleLogout}>
+                Çıkış Yap
               </Button>
-            </Link>
-            <Link href="/auth/register">
-              <Button variant="secondary" size="sm">
-                Kayıt Ol
-              </Button>
-            </Link>
+            ) : (
+              <>
+                <Link href="/auth/login">
+                  <Button variant="primary" size="sm">
+                    Giriş Yap
+                  </Button>
+                </Link>
+                <Link href="/auth/register">
+                  <Button variant="secondary" size="sm">
+                    Kayıt Ol
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>

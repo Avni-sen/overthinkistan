@@ -9,16 +9,22 @@ import Button from "@/components/Button";
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: "",
+    surname: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
+    termsAndConditions: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -29,6 +35,14 @@ export default function RegisterPage() {
 
     if (!formData.name) {
       newErrors.name = "Ad Soyad gereklidir";
+    }
+
+    if (!formData.username) {
+      newErrors.username = "Kullanıcı adı gereklidir";
+    }
+
+    if (!formData.surname) {
+      newErrors.surname = "Soyad gereklidir";
     }
 
     if (!formData.email) {
@@ -47,6 +61,10 @@ export default function RegisterPage() {
       newErrors.confirmPassword = "Şifreler eşleşmiyor";
     }
 
+    if (!formData.termsAndConditions) {
+      newErrors.termsAndConditions = "Kullanım şartlarını kabul etmelisiniz";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -59,18 +77,36 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // Burada gerçek API çağrısı yapılacak
-      console.log("Kayıt yapılıyor:", formData);
+      const response = await fetch("http://localhost:3001/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          surname: formData.surname,
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+          termsAndConditions: formData.termsAndConditions,
+        }),
+      });
 
-      // Simüle edilmiş API gecikmesi
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const data = await response.json();
 
-      // Başarılı kayıt sonrası yönlendirme
-      window.location.href = "/auth/login?registered=true";
+      if (!response.ok) {
+        throw new Error(data.message || "Kayıt işlemi başarısız oldu");
+      }
+      // Başarılı kayıt sonrası anasayfaya yönlendirme
+      window.location.href = "/auth/login";
     } catch (error) {
       console.error("Kayıt hatası:", error);
       setErrors({
-        form: "Kayıt yapılamadı. Lütfen bilgilerinizi kontrol edin.",
+        form:
+          error instanceof Error
+            ? error.message
+            : "Kayıt yapılamadı. Lütfen bilgilerinizi kontrol edin.",
       });
     } finally {
       setIsLoading(false);
@@ -93,13 +129,39 @@ export default function RegisterPage() {
           id="name"
           name="name"
           type="text"
-          label="Ad Soyad"
+          label="Ad"
           autoComplete="name"
-          placeholder="Ad Soyad"
+          placeholder="Ad"
           required
           value={formData.name}
           onChange={handleChange}
           error={errors.name}
+        />
+
+        <Input
+          id="surname"
+          name="surname"
+          type="text"
+          label="Soyad"
+          autoComplete="surname"
+          placeholder="Soyad"
+          required
+          value={formData.surname}
+          onChange={handleChange}
+          error={errors.surname}
+        />
+
+        <Input
+          id="username"
+          name="username"
+          type="text"
+          label="Username"
+          autoComplete="username"
+          placeholder="Username"
+          required
+          value={formData.username}
+          onChange={handleChange}
+          error={errors.username}
         />
 
         <Input
@@ -143,14 +205,16 @@ export default function RegisterPage() {
 
         <div className="flex items-center">
           <input
-            id="terms"
-            name="terms"
+            id="termsAndConditions"
+            name="termsAndConditions"
             type="checkbox"
             className="h-4 w-4 text-primary-light dark:text-primary-dark focus:ring-primary-light dark:focus:ring-primary-dark border-gray-300 dark:border-gray-600 rounded transition-colors duration-200"
+            checked={formData.termsAndConditions}
+            onChange={handleChange}
             required
           />
           <label
-            htmlFor="terms"
+            htmlFor="termsAndConditions"
             className="ml-2 block text-sm text-text-light dark:text-text-dark transition-colors duration-200"
           >
             <span>
@@ -171,6 +235,11 @@ export default function RegisterPage() {
             </span>
           </label>
         </div>
+        {errors.termsAndConditions && (
+          <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+            {errors.termsAndConditions}
+          </p>
+        )}
 
         <div>
           <Button type="submit" className="w-full" disabled={isLoading}>

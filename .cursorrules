@@ -8,8 +8,8 @@ Overthinkistan, insanların hayatın ağırlıklarından ve sorunlarından uzakl
 ### 🚀 Kullanılan Teknolojiler
 - **Next.js** → React tabanlı framework, SSR ve SEO uyumluluğu için kullanılıyor.
 - **Tailwind CSS** → Hızlı ve modüler tasarım için kullanılıyor.
-- **PostgreSQL** → Veritabanı olarak kullanılacak.
-- **.NET 9 (Backend)** → API servisleri için tercih ediliyor.
+- **MongoDB** → Veritabanı olarak kullanılacak.
+- **Nest.js (Backend)** → API servisleri için tercih ediliyor.
 - **NextAuth.js** → Kullanıcı kimlik doğrulama ve OAuth entegrasyonu için.
 - **SignalR** → Gerçek zamanlı etkileşim (bildirim, sohbet) için.
 - **Markdown** → Makale ve rehber içerik yönetimi için.
