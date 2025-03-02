@@ -1,0 +1,45 @@
+@keyframes rotate-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-90deg);
+  }
+  75% {
+    transform: rotate(90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.brain-rotate {
+  animation: rotate-animation 2s ease-in-out infinite;
+}
+
+.loading-overlay {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.loading-text {
+  animation: pulse 1.5s ease-in-out infinite;
+}

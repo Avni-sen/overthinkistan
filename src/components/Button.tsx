@@ -23,7 +23,7 @@ export default function Button({
 
   const variantClasses = {
     primary: "btn-primary",
-    secondary: "btn-secondary",
+    secondary: "btn-secondary text-white",
     danger:
       "bg-danger text-white hover:bg-danger/90 focus:ring-danger/50 transition-colors duration-200",
     accent:

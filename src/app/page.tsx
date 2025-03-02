@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
-import Logo from "@/components/common/Logo";
-import ThemeToggle from "@/components/common/ThemeToggle";
 import { useEffect, useState } from "react";
+import { Gender, User } from "@/types/user";
+import Image from "next/image";
+import { FaLayerGroup } from "react-icons/fa";
+import CategoryPopup from "@/components/common/CategoryPopup";
 
 const getCookie = (name: string): string | null => {
   if (typeof document === "undefined") return null;
@@ -28,19 +30,42 @@ const deleteCookie = (name: string): void => {
 export default function Home() {
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [isCategoryPopupOpen, setIsCategoryPopupOpen] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   useEffect(() => {
     // Token cookie kontrolü
     const token = getCookie("token");
     setIsLoggedIn(!!token);
+
+    if (token) {
+      const fetchUserData = async () => {
+        setLoading(true);
+        const response = await fetch("http://localhost:3001/users/me", {
+          method: "GET",
+          headers: {
+            Authorization: String(token),
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Kullanıcı bilgileri alınamadı");
+        }
+
+        const userData = await response.json();
+
+        setUser(userData);
+        setLoading(false);
+      };
+      fetchUserData();
+    }
   }, []);
 
-  const handleLogout = () => {
-    // Token cookie'sini sil
-    deleteCookie("token");
-    setIsLoggedIn(false);
-    // Çıkış yapıldığında login sayfasına yönlendir
-    router.push("/auth/login");
+  const handleSaveCategories = (categories: string[]) => {
+    setSelectedCategories(categories);
   };
 
   return (
@@ -52,26 +77,36 @@ export default function Home() {
           <aside className="w-full lg:w-1/4 bg-white dark:bg-card-dark rounded-lg shadow-md p-6 h-fit sticky top-8 transition-colors duration-200">
             <div className="text-center mb-6">
               <div className="w-24 h-24 rounded-full bg-softBg-light dark:bg-gray-700 mx-auto mb-4 flex items-center justify-center transition-colors duration-200">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-12 w-12 text-gray-500 dark:text-gray-300"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                {user?.profilePhoto ? (
+                  <Image
+                    src={user.profilePhoto}
+                    alt="Profil Fotoğrafı"
+                    width={96}
+                    height={96}
+                    className="rounded-full object-cover"
                   />
-                </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-12 w-12 text-gray-500 dark:text-gray-300"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                )}
               </div>
               <h2 className="text-xl font-semibold text-text-light dark:text-text-dark transition-colors duration-200">
-                Hoş Geldiniz
+                {user?.name} {user?.surname}
               </h2>
               <p className="text-gray-500 dark:text-gray-400 mt-1 transition-colors duration-200">
-                Overthinkistan'a katılın
+                {user?.biography}
               </p>
             </div>
 
@@ -82,7 +117,7 @@ export default function Home() {
               <ul className="space-y-2">
                 <li>
                   <a
-                    href="#"
+                    href="/"
                     className="flex items-center text-text-light dark:text-gray-300 hover:text-primary-light dark:hover:text-primary-dark transition-colors duration-200"
                   >
                     <svg
@@ -224,8 +259,8 @@ export default function Home() {
           <div className="w-full lg:w-2/4 space-y-6">
             {/* Gönderi Oluşturma Alanı */}
             <div className="bg-white dark:bg-card-dark rounded-lg shadow-md p-6 transition-colors duration-200">
-              <h2 className="text-lg font-semibold mb-4 text-text-light dark:text-text-dark transition-colors duration-200">
-                Bir şeyler paylaş
+              <h2 className="text-lg font-semibold ml-2 mb-4 text-text-light dark:text-text-dark transition-colors duration-200">
+                Ne Hakkında Konuşmak İstiyorsunuz?
               </h2>
               <textarea
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-800 text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent transition-colors duration-200"
@@ -266,6 +301,18 @@ export default function Home() {
                       />
                     </svg>
                   </button>
+                  <button
+                    onClick={() => setIsCategoryPopupOpen(true)}
+                    className="text-gray-500 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark transition-colors duration-200 relative"
+                    title="Kategoriler"
+                  >
+                    <FaLayerGroup className="h-6 w-6" />
+                    {selectedCategories.length > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-primary-light dark:bg-primary-dark text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {selectedCategories.length}
+                      </span>
+                    )}
+                  </button>
                 </div>
                 <div className="flex items-center space-x-4">
                   <label className="flex items-center cursor-pointer">
@@ -277,12 +324,19 @@ export default function Home() {
                       Anonim olarak paylaş
                     </span>
                   </label>
-                  <Button variant="primary" size="sm">
-                    Paylaş
+                  <Button variant="primary" size="sm" className="rounded-full">
+                    Gönderi Yayınla
                   </Button>
                 </div>
               </div>
             </div>
+
+            {/* Kategori Popup */}
+            <CategoryPopup
+              isOpen={isCategoryPopupOpen}
+              onClose={() => setIsCategoryPopupOpen(false)}
+              onSave={handleSaveCategories}
+            />
 
             {/* Gönderiler */}
             {[1, 2, 3, 4, 5].map((post) => (

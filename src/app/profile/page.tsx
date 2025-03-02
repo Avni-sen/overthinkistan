@@ -6,6 +6,16 @@ import Button from "@/components/Button";
 import { getCookie as getNextCookie, deleteCookie } from "cookies-next";
 import { Gender, User } from "@/types/user";
 import { UpdateUserDto } from "@/types/update-user-dto";
+import {
+  FiEdit,
+  FiSave,
+  FiX,
+  FiArrowLeft,
+  FiUser,
+  FiMail,
+  FiInfo,
+} from "react-icons/fi";
+import { FaTransgender } from "react-icons/fa";
 
 // Cookie yardımcı fonksiyonu
 const getCookie = (name: string): string | null => {
@@ -311,7 +321,13 @@ export default function ProfilePage() {
                     disabled={saving}
                     className="mr-2"
                   >
-                    {saving ? "Kaydediliyor..." : "Kaydet"}
+                    {saving ? (
+                      "Kaydediliyor..."
+                    ) : (
+                      <>
+                        <FiSave className="mr-1 inline" /> Kaydet
+                      </>
+                    )}
                   </Button>
                   <Button
                     type="button"
@@ -319,7 +335,7 @@ export default function ProfilePage() {
                     size="sm"
                     onClick={() => setIsEditing(false)}
                   >
-                    İptal
+                    <FiX className="mr-1 inline" /> İptal
                   </Button>
                 </div>
               </div>
@@ -383,26 +399,28 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs text-gray-500 block mb-1">
-                          Ad
+                          <FiUser className="inline mr-1" /> Ad
                         </label>
                         <input
                           type="text"
                           name="name"
                           value={formData.name}
                           onChange={handleInputChange}
-                          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-300"
+                          placeholder="Adınızı giriniz"
+                          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white  text-gray-800  placeholder-gray-400 dark:placeholder-gray-300"
                         />
                       </div>
                       <div>
                         <label className="text-xs text-gray-500 block mb-1">
-                          Soyad
+                          <FiUser className="inline mr-1" /> Soyad
                         </label>
                         <input
                           type="text"
                           name="surname"
                           value={formData.surname}
                           onChange={handleInputChange}
-                          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-300"
+                          placeholder="Soyadınızı giriniz"
+                          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white  text-gray-800  placeholder-gray-400 dark:placeholder-gray-300"
                         />
                       </div>
                       <div>
@@ -414,7 +432,10 @@ export default function ProfilePage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-500 mb-1">Cinsiyet</p>
+                        <p className="text-xs text-gray-500 mb-1">
+                          <FaTransgender className="inline mr-1" /> Cinsiyet
+                        </p>
+
                         <select
                           name="gender"
                           value={formData.gender}
@@ -424,7 +445,7 @@ export default function ProfilePage() {
                               gender: e.target.value as Gender,
                             })
                           }
-                          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
+                          className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white  text-gray-800 "
                         >
                           <option value={Gender.MALE}>Erkek</option>
                           <option value={Gender.FEMALE}>Kadın</option>
@@ -438,27 +459,27 @@ export default function ProfilePage() {
 
                     <div>
                       <label className="text-xs text-gray-500 block mb-1">
-                        E-posta
+                        <FiMail className="inline mr-1" /> E-posta
                       </label>
                       <input
                         type="email"
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-300"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white  text-gray-800  placeholder-gray-400 dark:placeholder-gray-300"
                       />
                     </div>
 
                     <div>
                       <label className="text-xs text-gray-500 block mb-1">
-                        Biyografi
+                        <FiInfo className="inline mr-1" /> Biyografi
                       </label>
                       <textarea
                         name="biography"
                         value={formData.biography}
                         onChange={handleInputChange}
                         rows={3}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-300"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white  text-gray-800  placeholder-gray-400 dark:placeholder-gray-300"
                       ></textarea>
                     </div>
 
@@ -637,9 +658,13 @@ export default function ProfilePage() {
       )}
 
       {!isEditing && user && (
-        <div className="mt-8 flex justify-center">
+        <div className="mt-8 flex justify-center gap-4">
+          <Button variant="secondary" onClick={() => router.back()}>
+            <FiArrowLeft className="mr-1 inline" />
+            Ana Sayfa
+          </Button>
           <Button variant="primary" onClick={() => setIsEditing(true)}>
-            Profili Düzenle
+            <FiEdit className="mr-1 inline" /> Profili Düzenle
           </Button>
         </div>
       )}
