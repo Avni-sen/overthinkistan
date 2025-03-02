@@ -17,11 +17,13 @@ interface CategoryPopupProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (selectedCategories: string[]) => void;
+  onCancel: () => void;
 }
 
 export default function CategoryPopup({
   isOpen,
   onClose,
+  onCancel,
   onSave,
 }: CategoryPopupProps) {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -89,6 +91,11 @@ export default function CategoryPopup({
   const handleSave = () => {
     onSave(selectedCategories);
     onClose();
+  };
+
+  const handleCancel = () => {
+    setSelectedCategories([]);
+    onCancel();
   };
 
   if (!isOpen) return null;
@@ -171,7 +178,7 @@ export default function CategoryPopup({
 
         <div className="flex justify-end space-x-3">
           <button
-            onClick={onClose}
+            onClick={handleCancel}
             className="px-4 py-2 rounded-lg text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
           >
             İptal

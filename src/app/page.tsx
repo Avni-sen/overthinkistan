@@ -67,6 +67,10 @@ export default function Home() {
   const handleSaveCategories = (categories: string[]) => {
     setSelectedCategories(categories);
   };
+  const handleCancelCategories = () => {
+    setSelectedCategories([]);
+    setIsCategoryPopupOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark transition-colors duration-200">
@@ -334,8 +338,11 @@ export default function Home() {
             {/* Kategori Popup */}
             <CategoryPopup
               isOpen={isCategoryPopupOpen}
-              onClose={() => setIsCategoryPopupOpen(false)}
+              onClose={() => {
+                setIsCategoryPopupOpen(false);
+              }}
               onSave={handleSaveCategories}
+              onCancel={handleCancelCategories}
             />
 
             {/* Gönderiler */}

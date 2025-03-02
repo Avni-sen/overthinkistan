@@ -351,3 +351,53 @@ MigrationBackup/
 .ionide/
 
 .idea/
+
+# Next.js ve React için eklenen kısım
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+/dist
+
+# webpack
+/.webpack/
+webpack-stats.json
+webpack.generated.js
+
+# cache ve sıkıştırılmış dosyalar
+.cache/
+*.gz
+*.br
+.eslintcache
+.stylelintcache
+.parcel-cache
+
+# misc
+.DS_Store
+*.pem
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
