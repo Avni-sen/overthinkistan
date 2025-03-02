@@ -8,6 +8,9 @@ import { Gender, User } from "@/types/user";
 import Image from "next/image";
 import { FaLayerGroup } from "react-icons/fa";
 import CategoryPopup from "@/components/common/CategoryPopup";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Posts from "@/components/Posts";
 
 const getCookie = (name: string): string | null => {
   if (typeof document === "undefined") return null;
@@ -34,6 +37,12 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [isCategoryPopupOpen, setIsCategoryPopupOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [postContent, setPostContent] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [postPhoto, setPostPhoto] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [refreshPosts, setRefreshPosts] = useState(0);
 
   useEffect(() => {
     // Token cookie kontrolü
@@ -72,8 +81,131 @@ export default function Home() {
     setIsCategoryPopupOpen(false);
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPostPhoto(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCreatePost = async () => {
+    if (!postContent.trim()) {
+      toast.error("Lütfen gönderi içeriği giriniz.", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      let photoUrl = "";
+
+      if (postPhoto) {
+        const formData = new FormData();
+        formData.append("file", postPhoto);
+
+        const photoResponse = await fetch(
+          "http://localhost:3001/posts/upload-post-photo",
+          {
+            method: "POST",
+            headers: {
+              Authorization: String(getCookie("token")),
+            },
+            body: formData,
+          }
+        );
+
+        if (!photoResponse.ok) {
+          throw new Error("Fotoğraf yüklenemedi");
+        }
+
+        const photoData = await photoResponse.json();
+        photoUrl = photoData.url;
+      }
+
+      const postData = {
+        content: postContent,
+        categoryRefIds: selectedCategories,
+        isAnonymous,
+        photoUrl: photoUrl || undefined,
+      };
+
+      const response = await fetch("http://localhost:3001/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: String(getCookie("token")),
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Gönderi oluşturulamadı");
+      }
+
+      setPostContent("");
+      setIsAnonymous(false);
+      setPostPhoto(null);
+      setPreviewUrl(null);
+      setSelectedCategories([]);
+      setRefreshPosts((prev) => prev + 1);
+
+      toast.success("Gönderi başarıyla oluşturuldu!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
+    } catch (error) {
+      console.error("Post oluşturma hatası:", error);
+      toast.error(
+        "Gönderi oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        }
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark transition-colors duration-200">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-6">
@@ -270,10 +402,50 @@ export default function Home() {
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-800 text-text-light dark:text-text-dark focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent transition-colors duration-200"
                 placeholder="Düşüncelerini paylaş..."
                 rows={3}
+                value={postContent}
+                onChange={(e) => setPostContent(e.target.value)}
               ></textarea>
+
+              {/* Fotoğraf Önizleme */}
+              {previewUrl && (
+                <div className="relative mt-3">
+                  <img
+                    src={previewUrl}
+                    alt="Gönderi fotoğrafı önizleme"
+                    className="w-full max-h-64 object-cover rounded-lg"
+                  />
+                  <button
+                    onClick={() => {
+                      setPostPhoto(null);
+                      setPreviewUrl(null);
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors duration-200"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+
               <div className="mt-3 flex justify-between items-center">
                 <div className="flex space-x-2">
-                  <button className="text-gray-500 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark transition-colors duration-200">
+                  <label className="cursor-pointer text-gray-500 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark transition-colors duration-200">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-6 w-6"
@@ -288,7 +460,7 @@ export default function Home() {
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                  </button>
+                  </label>
                   <button className="text-gray-500 dark:text-gray-400 hover:text-primary-light dark:hover:text-primary-dark transition-colors duration-200">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -323,13 +495,21 @@ export default function Home() {
                     <input
                       type="checkbox"
                       className="form-checkbox h-4 w-4 text-primary-light dark:text-primary-dark rounded border-gray-300 dark:border-gray-600 focus:ring-primary-light dark:focus:ring-primary-dark transition-colors duration-200"
+                      checked={isAnonymous}
+                      onChange={(e) => setIsAnonymous(e.target.checked)}
                     />
                     <span className="ml-2 text-sm text-text-light dark:text-gray-300 transition-colors duration-200">
                       Anonim olarak paylaş
                     </span>
                   </label>
-                  <Button variant="primary" size="sm" className="rounded-full">
-                    Gönderi Yayınla
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={handleCreatePost}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Yükleniyor..." : "Gönderi Yayınla"}
                   </Button>
                 </div>
               </div>
@@ -346,105 +526,7 @@ export default function Home() {
             />
 
             {/* Gönderiler */}
-            {[1, 2, 3, 4, 5].map((post) => (
-              <div
-                key={post}
-                className="bg-white dark:bg-card-dark rounded-lg shadow-md p-6 transition-colors duration-200"
-              >
-                <div className="flex items-center mb-4">
-                  <div className="w-10 h-10 rounded-full bg-softBg-light dark:bg-gray-700 mr-3 flex items-center justify-center transition-colors duration-200">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 text-gray-500 dark:text-gray-300"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-text-light dark:text-text-dark transition-colors duration-200">
-                      Anonim Kullanıcı
-                    </h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm transition-colors duration-200">
-                      3 saat önce
-                    </p>
-                  </div>
-                </div>
-                <div className="mb-4">
-                  <p className="text-text-light dark:text-text-dark transition-colors duration-200">
-                    Bugün hayatımda ilk kez bir şeyi başardığımda, kendimi övmek
-                    yerine "neden daha önce yapmadım" diye düşündüm.
-                    Overthinking'in en güzel örneği...
-                  </p>
-                </div>
-                <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700 pt-4 transition-colors duration-200">
-                  <button className="flex items-center space-x-1 hover:text-primary-light dark:hover:text-primary-dark transition-colors duration-200">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                    <span>23</span>
-                  </button>
-                  <button className="flex items-center space-x-1 hover:text-primary-light dark:hover:text-primary-dark transition-colors duration-200">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                      />
-                    </svg>
-                    <span>7</span>
-                  </button>
-                  <button className="flex items-center space-x-1 hover:text-primary-light dark:hover:text-primary-dark transition-colors duration-200">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                      />
-                    </svg>
-                    <span>Paylaş</span>
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            <div className="flex justify-center mt-8">
-              <Button variant="secondary" size="md">
-                Daha Fazla Göster
-              </Button>
-            </div>
+            <Posts refresh={refreshPosts} />
           </div>
 
           {/* Sağ Sidebar - Popüler Konular */}
