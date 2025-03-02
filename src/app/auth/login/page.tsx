@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthLayout from "@/components/layout/AuthLayout";
 import Input from "@/components/common/Input";
 import Button from "@/components/Button";
 
 export default function LoginPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirectUrl") || "/";
 
@@ -18,6 +19,18 @@ export default function LoginPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Eğer kullanıcı zaten giriş yapmışsa, ana sayfaya yönlendir
+  useEffect(() => {
+    const token = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))
+      ?.split("=")[1];
+
+    if (token) {
+      router.push("/");
+    }
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -83,7 +96,8 @@ export default function LoginPage() {
         document.cookie = `token=Bearer ${data.token}; path=/;`;
       }
 
-      window.location.href = redirectUrl;
+      // Router kullanarak yönlendirme yap
+      router.push(redirectUrl);
     } catch (error) {
       console.error("Giriş hatası:", error);
       setErrors({

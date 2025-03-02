@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
 import Logo from "@/components/common/Logo";
 import ThemeToggle from "@/components/common/ThemeToggle";
@@ -25,6 +26,7 @@ const deleteCookie = (name: string): void => {
 };
 
 export default function Home() {
+  const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -38,39 +40,11 @@ export default function Home() {
     deleteCookie("token");
     setIsLoggedIn(false);
     // Çıkış yapıldığında login sayfasına yönlendir
-    window.location.href = "/auth/login";
+    router.push("/auth/login");
   };
 
   return (
     <div className="min-h-screen bg-background-light dark:bg-background-dark transition-colors duration-200">
-      {/* Header */}
-      <header className="bg-white dark:bg-card-dark shadow-sm transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <Logo size="md" />
-          <div className="flex items-center space-x-4">
-            <ThemeToggle />
-            {isLoggedIn ? (
-              <Button variant="danger" size="sm" onClick={handleLogout}>
-                Çıkış Yap
-              </Button>
-            ) : (
-              <>
-                <Link href="/auth/login">
-                  <Button variant="primary" size="sm">
-                    Giriş Yap
-                  </Button>
-                </Link>
-                <Link href="/auth/register">
-                  <Button variant="secondary" size="sm">
-                    Kayıt Ol
-                  </Button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-6">
@@ -129,8 +103,8 @@ export default function Home() {
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    href="/profile"
                     className="flex items-center text-text-light dark:text-gray-300 hover:text-primary-light dark:hover:text-primary-dark transition-colors duration-200"
                   >
                     <svg
@@ -148,7 +122,7 @@ export default function Home() {
                       />
                     </svg>
                     Profil
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a
@@ -486,52 +460,6 @@ export default function Home() {
           </aside>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="bg-white dark:bg-card-dark border-t border-gray-200 dark:border-gray-800 mt-12 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <Logo size="md" />
-              <p className="text-gray-500 dark:text-gray-400 mt-2 transition-colors duration-200">
-                Düşüncelerin Özgür Dünyası
-              </p>
-            </div>
-            <div className="flex space-x-6">
-              <a
-                href="#"
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
-              >
-                Hakkımızda
-              </a>
-              <a
-                href="#"
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
-              >
-                İletişim
-              </a>
-              <a
-                href="#"
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
-              >
-                Gizlilik Politikası
-              </a>
-              <a
-                href="#"
-                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200"
-              >
-                Kullanım Şartları
-              </a>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8 text-center text-gray-500 dark:text-gray-400 transition-colors duration-200">
-            <p>
-              &copy; {new Date().getFullYear()} Overthinkistan. Tüm hakları
-              saklıdır.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

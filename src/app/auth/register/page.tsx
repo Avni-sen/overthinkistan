@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import AuthLayout from "@/components/layout/AuthLayout";
 import Input from "@/components/common/Input";
 import Button from "@/components/Button";
 
 export default function RegisterPage() {
+  const router = useRouter();
+
   const [formData, setFormData] = useState({
     name: "",
     surname: "",
@@ -18,6 +21,18 @@ export default function RegisterPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Eğer kullanıcı zaten giriş yapmışsa, ana sayfaya yönlendir
+  useEffect(() => {
+    const token = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))
+      ?.split("=")[1];
+
+    if (token) {
+      router.push("/");
+    }
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -98,8 +113,8 @@ export default function RegisterPage() {
       if (!response.ok) {
         throw new Error(data.message || "Kayıt işlemi başarısız oldu");
       }
-      // Başarılı kayıt sonrası anasayfaya yönlendirme
-      window.location.href = "/auth/login";
+      // Başarılı kayıt sonrası login sayfasına yönlendirme
+      router.push("/auth/login?registered=true");
     } catch (error) {
       console.error("Kayıt hatası:", error);
       setErrors({
